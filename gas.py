@@ -1,3 +1,4 @@
+import random
 Zc = [0.9976, 0.9901, 0.9785, 0.9645, 0.9591, 0.9496, 0.9396, 0.9331, 0.8898, 0.9933, 0.9995]
 r_eps = [1000, 640, 600, 480]
 
@@ -279,6 +280,34 @@ class Gas(object):
     def calc_sum_r(self):
         self.sum = self.C1 * 0.9976
 
+    def f_mix(self):
+        s = []
+        for mix in self.mixes:
+            mix.get_MN()
+        for i in range(self.N - 1):
+            s.append(abs(self.mixes[i].MN - self.mixes[i + 1].MN))
+        return s
+
+    def calc_MN(self):
+        grad = [random.random(), random.random()]
+        MN_p = self.f_mix()
+        while True:
+            for i in range(self.N - 1):
+                for j in range(4):
+                    if self.mixes[i].r[j] != 0:
+                        self.mixes[i].r[j] -= 0.05 * grad[i]
+            for mix in self.mixes:
+                mix.normalize()
+            for i in range(4):
+                s = 0
+                for j in range(2):
+                    s += self.mixes[j].r[i]
+                self.mixes[self.N - 1].r[i] = self.rsn[i] - s
+            MN_N = self.f_mix()
+            grad = [MN_N[i] - MN_p[i] for i in range(2)]
+            MN_p = MN_N
+
 
 if __name__ == "__main__":
     g = Gas(97.064, 1.6758, 0.2453, 0.0356, 0.0253, 0.0011, 0.0076, 0.0132, 0.0091, 0.053, 0.87)
+    g.calc_MN()
