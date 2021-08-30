@@ -185,12 +185,12 @@ class Mix(object):
 
     def get_MN(self):
         self.MN = 0
-        for k in range(7):
+        for k in range(8):
             s = 0
-            for l in range(6):
+            for l in range(7):
                 try:
                     rec = next(item for item in A if item["k"] == k and item["l"] == l)
-                    s += rec['vals'][self.type-1] * (self.rn[self.first_comp]) ** k * (self.rn[self.second_comp]) ** l
+                    s += rec['vals'][self.type - 1] * (self.rn[self.first_comp]) ** k * (self.rn[self.second_comp]) ** l
                 except StopIteration:
                     continue
             self.MN += s
@@ -245,7 +245,7 @@ class Gas(object):
         self.set_init_values()
         for mix in self.mixes:
             mix.get_MN()
-        print(self.mixes)
+            print(mix.MN)
 
     def process_mixes(self):
         for component in self.components:
@@ -261,6 +261,8 @@ class Gas(object):
         mix3 = Mix('mix3', 3, self.rsn)
         mix4 = Mix('mix4', 4, self.rsn)
         self.mixes = [mix1, mix2, mix3, mix4]
+        # TODO: Fix mixes select
+        # TODO: Add \Delta coefficients
         self.mixes.sort(key=lambda x: x.w, reverse=True)
         self.mixes = self.mixes[:self.N]
 
