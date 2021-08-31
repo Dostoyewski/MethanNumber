@@ -1,3 +1,5 @@
+import numpy as np
+
 Zc = [0.9976, 0.9901, 0.9785, 0.9645, 0.9591, 0.9496, 0.9396, 0.9331, 0.8898, 0.9933, 0.9995]
 r_eps = [1000, 640, 600, 480]
 
@@ -156,6 +158,7 @@ class Mix(object):
         self.rmax = None
         self.first_comp = None
         self.second_comp = None
+        self.weight = 1
         self.MN = 0
         # Эти извращенцы не могли по нормальному в ГОСТе смеси ввести?
         # Почему у 2-й смеси зануляется 3-й компонент?!
@@ -182,6 +185,9 @@ class Mix(object):
         self.rn = []
         for i in range(len(self.r)):
             self.rn.append(self.r[i] * 100 / s)
+
+    def calc_weights(self):
+        self.weight = sum(self.r) / 100
 
     def get_MN(self):
         self.MN = 0
@@ -237,15 +243,17 @@ class Gas(object):
         self.components.append(Component("N2", N2, 10))
         self.sum = 0
         self.mixes = None
+        self.MN = 0
         self.r = None
         self.rc4p = None
         self.rs = None
         self.rsn = None
         self.process_mixes()
         self.set_init_values()
+        self.p_grad = None
+        self.p_vect = None
         for mix in self.mixes:
             mix.get_MN()
-            print(mix.MN)
 
     def process_mixes(self):
         for component in self.components:
@@ -312,14 +320,22 @@ class Gas(object):
                 self.mixes[i].r = old_vals
         return grad
 
+    def construct_comm_grad(self):
+        grad = self.get_grad_3()
+        beta = np.linalg.norm(grad) / np.linalg.norm(self.p_grad)
+        return np.add(grad, np.multiply(beta, self.p_vect))
+
     def calc_MN(self):
         MN_N = self.f_mix()
         while MN_N >= self.f_mix():
             MN_N = self.f_mix()
             coef = 0.00005
             if MN_N < 0.5:
-                coef /= 10
-            grad = self.get_grad_3()
+                coef /= 1000
+            try:
+                grad = self.construct_comm_grad()
+            except TypeError:
+                grad = self.get_grad_3()
             # gradient adding
             k = 0
             for i in range(self.N - 1):
@@ -332,6 +348,7 @@ class Gas(object):
                     k += 1
             for mix in self.mixes:
                 mix.normalize()
+                mix.calc_weights()
             # last mix caluclating
             for i in range(4):
                 s = 0
@@ -341,9 +358,32 @@ class Gas(object):
                     self.mixes[self.N - 1].r[i] = self.rsn[i] - s
                 else:
                     self.mixes[0].r[i] = self.rsn[i] - self.mixes[1].r[i]
+            self.p_vect = grad
+            self.p_grad = self.get_grad_3()
+
             # s_e = self.sec_eq()
+        for mix in self.mixes:
+            self.MN += mix.weight * mix.MN
 
 
 if __name__ == "__main__":
+    print("Смесь 0:")
     g = Gas(97.064, 1.6758, 0.2453, 0.0356, 0.0253, 0.0011, 0.0076, 0.0132, 0.0091, 0.053, 0.87)
     g.calc_MN()
+    print(g.MN)
+    print("Смесь 2:")
+    g2 = Gas(94.5105, 3.1143, 1.1094, 0.1676, 0.1648, 0.0019, 0.0276, 0.0205, 0.0122, 0.0273, 0.6019)
+    g2.calc_MN()
+    print(g2.MN)
+    print("Смесь 3:")
+    g3 = Gas(91.3566, 3.4227, 0.7786, 0.1028, 0.1275, 0.0005, 0.0213, 0.0186, 0.0130, 0.7021, 3.4563)
+    g3.calc_MN()
+    print(g3.MN)
+    print("Смесь 4:")
+    g4 = Gas(91.7207, 3.9815, 1.6767, 0.3145, 0.3928, 0.0035, 0.0867, 0.0652, 0.0434, 1.5283, 0.1867)
+    g4.calc_MN()
+    print(g4.MN)
+    print("Смесь 1:")
+    g1 = Gas(96.2448, 2.9453, 0.0451, 0.0356, 0.0067, 0.0028, 0.0019, 0.0029, 0.0202, 0.4198, 0.2749)
+    g1.calc_MN()
+    print(g1.MN)
