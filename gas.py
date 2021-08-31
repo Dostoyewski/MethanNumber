@@ -1,4 +1,3 @@
-import random
 Zc = [0.9976, 0.9901, 0.9785, 0.9645, 0.9591, 0.9496, 0.9396, 0.9331, 0.8898, 0.9933, 0.9995]
 r_eps = [1000, 640, 600, 480]
 
@@ -283,29 +282,66 @@ class Gas(object):
     def f_mix(self):
         s = []
         for mix in self.mixes:
+            mix.normalize()
             mix.get_MN()
         for i in range(self.N - 1):
             s.append(abs(self.mixes[i].MN - self.mixes[i + 1].MN))
-        return s
+        return sum(s)
+
+    def sec_eq(self):
+        s = 0
+        for i in range(self.N):
+            for j in range(4):
+                s += self.mixes[i].r[j] / 100
+        return abs(s - 1)
+
+    def get_grad_3(self, eps=0.01):
+        """
+        Returns gradient of first equation.
+        :param eps:
+        :return: gradient, 1x7 vector
+        """
+        grad = []
+        current_val = self.f_mix()
+        for i in range(self.N - 1):
+            n = 4 if i == 0 else 4
+            for j in range(n):
+                old_vals = self.mixes[i].r.copy()
+                self.mixes[i].r[j] += eps
+                grad.append((self.f_mix() - current_val) / eps)
+                self.mixes[i].r = old_vals
+        return grad
 
     def calc_MN(self):
-        grad = [random.random(), random.random()]
-        MN_p = self.f_mix()
-        while True:
+        MN_N = self.f_mix()
+        while MN_N >= self.f_mix():
+            MN_N = self.f_mix()
+            coef = 0.00005
+            if MN_N < 0.5:
+                coef /= 10
+            grad = self.get_grad_3()
+            # gradient adding
+            k = 0
             for i in range(self.N - 1):
-                for j in range(4):
+                n = 4 if i == 0 else 4
+                for j in range(n):
                     if self.mixes[i].r[j] != 0:
-                        self.mixes[i].r[j] -= 0.05 * grad[i]
+                        self.mixes[i].r[j] -= coef * grad[k]
+                        if self.mixes[i].r[j] < 0:
+                            self.mixes[i].r[j] = 0
+                    k += 1
             for mix in self.mixes:
                 mix.normalize()
+            # last mix caluclating
             for i in range(4):
                 s = 0
                 for j in range(2):
                     s += self.mixes[j].r[i]
-                self.mixes[self.N - 1].r[i] = self.rsn[i] - s
-            MN_N = self.f_mix()
-            grad = [MN_N[i] - MN_p[i] for i in range(2)]
-            MN_p = MN_N
+                if self.mixes[self.N - 1].r[i] != 0:
+                    self.mixes[self.N - 1].r[i] = self.rsn[i] - s
+                else:
+                    self.mixes[0].r[i] = self.rsn[i] - self.mixes[1].r[i]
+            # s_e = self.sec_eq()
 
 
 if __name__ == "__main__":
