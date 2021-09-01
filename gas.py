@@ -180,6 +180,9 @@ class Mix(object):
             self.second_comp = 1
         self.w = sum([self.rn[i] * self.rmax[i] / r_eps[i] for i in range(4)])
 
+    def __str__(self):
+        return "Смесь " + self.name + ",  показатель соответствия: " + str(self.w)
+
     def normalize(self):
         s = sum(self.r)
         self.rn = []
@@ -216,6 +219,9 @@ class Component(object):
         self.mol = mol
         self.index = index
         self.r = None
+
+    def __str__(self):
+        return "Компонент: " + str(self.name) + ", молярная доля: " + str(self.mol)
 
     def get_weight(self):
         return self.mol * Zc[self.index]
@@ -254,6 +260,17 @@ class Gas(object):
         self.p_vect = None
         for mix in self.mixes:
             mix.get_MN()
+
+    def __str__(self):
+        s = ""
+        for component in self.components:
+            s += str(component) + "\n"
+        s += "Число смесей: " + str(self.N) + "\n"
+        s += "Параметры смесей:\n"
+        for mix in self.mixes:
+            s += str(mix) + "\n"
+        s += "Расчитанное метановое число: " + str(self.MN)
+        return s
 
     def process_mixes(self):
         for component in self.components:
@@ -367,23 +384,22 @@ class Gas(object):
 
 
 if __name__ == "__main__":
-    print("Смесь 0:")
-    g = Gas(97.064, 1.6758, 0.2453, 0.0356, 0.0253, 0.0011, 0.0076, 0.0132, 0.0091, 0.053, 0.87)
+    print("---- Программа для расчета метанового числа по ГОСТ 34704-2020 ----")
+    print("### ВНИМАНИЕ: ПРИ ВВОДЕ В КАЧЕСТВЕ РАЗДЕЛИТЕЛЯ ДРОБНОЙ ЧАСТИ ИСПОЛЬЗОВАТЬ ТОЧКУ ###")
+    C1 = float(input("Введите молярную дозу метана в смеси: "))
+    C2 = float(input("Введите молярную дозу этана в смеси: "))
+    C3 = float(input("Введите молярную дозу пропана в смеси: "))
+    iC4 = float(input("Введите молярную дозу изобутана в смеси: "))
+    nC4 = float(input("Введите молярную дозу н-Бутана в смеси: "))
+    neoC5 = float(input("Введите молярную дозу неопентана в смеси: "))
+    iC5 = float(input("Введите молярную дозу изопентана в смеси: "))
+    nC5 = float(input("Введите молярную дозу н-Пентана в смеси: "))
+    C6 = float(input("Введите молярную дозу углеводородов С6+ в смеси: "))
+    CO2 = float(input("Введите молярную дозу диоксида углерода в смеси: "))
+    N2 = float(input("Введите молярную дозу азота в смеси: "))
+    N = int(input("Введите число смесей, используемых для расчета (3/4): "))
+    g = Gas(C1, C2, C3, iC4, nC4, neoC5, iC5, nC5, C6, CO2, N2, N)
     g.calc_MN()
-    print(g.MN)
-    print("Смесь 2:")
-    g2 = Gas(94.5105, 3.1143, 1.1094, 0.1676, 0.1648, 0.0019, 0.0276, 0.0205, 0.0122, 0.0273, 0.6019)
-    g2.calc_MN()
-    print(g2.MN)
-    print("Смесь 3:")
-    g3 = Gas(91.3566, 3.4227, 0.7786, 0.1028, 0.1275, 0.0005, 0.0213, 0.0186, 0.0130, 0.7021, 3.4563)
-    g3.calc_MN()
-    print(g3.MN)
-    print("Смесь 4:")
-    g4 = Gas(91.7207, 3.9815, 1.6767, 0.3145, 0.3928, 0.0035, 0.0867, 0.0652, 0.0434, 1.5283, 0.1867)
-    g4.calc_MN()
-    print(g4.MN)
-    print("Смесь 1:")
-    g1 = Gas(96.2448, 2.9453, 0.0451, 0.0356, 0.0067, 0.0028, 0.0019, 0.0029, 0.0202, 0.4198, 0.2749)
-    g1.calc_MN()
-    print(g1.MN)
+    print("Расчитанное MN: ", g.MN)
+    with open("out.txt", "w") as output:
+        output.write(str(g))
