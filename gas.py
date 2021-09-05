@@ -184,15 +184,27 @@ class Mix(object):
         return "Смесь " + self.name + ",  показатель соответствия: " + str(self.w)
 
     def normalize(self):
+        """
+        Нормализация компонентов смеси
+        :return:
+        """
         s = sum(self.r)
         self.rn = []
         for i in range(len(self.r)):
             self.rn.append(self.r[i] * 100 / s)
 
     def calc_weights(self):
+        """
+        Расчет весов для вычисления итогово MN
+        :return:
+        """
         self.weight = sum(self.r) / 100
 
     def get_MN(self):
+        """
+        Вычисление MN смеси.
+        :return:
+        """
         self.MN = 0
         for k in range(8):
             s = 0
@@ -232,6 +244,10 @@ class Component(object):
 
 
 class Gas(object):
+    """
+    Класс газовой смеси для расчета MN
+    """
+
     def __init__(self, C1, C2, C3, iC4, nC4, neoC5, iC5, nC5, C6, CO2, N2, N=3):
         # количество смесей
         self.N = N
@@ -273,6 +289,10 @@ class Gas(object):
         return s
 
     def process_mixes(self):
+        """
+        генерирует смеси в соответсвие с заданным числом
+        :return:
+        """
         for component in self.components:
             self.sum += component.get_weight()
         self.r = [comp.set_r(self.sum) for comp in self.components]
@@ -292,6 +312,10 @@ class Gas(object):
         self.mixes = self.mixes[:self.N]
 
     def set_init_values(self):
+        """
+        Установка начальных значений MN Для запуска итерационного процесса.
+        :return:
+        """
         for i in range(4):
             s = 0
             for mix in self.mixes:
@@ -305,6 +329,10 @@ class Gas(object):
         self.sum = self.C1 * 0.9976
 
     def f_mix(self):
+        """
+        Первая функция из системы 7
+        :return:
+        """
         s = []
         for mix in self.mixes:
             mix.normalize()
@@ -314,6 +342,10 @@ class Gas(object):
         return sum(s)
 
     def sec_eq(self):
+        """
+        Вторая функция из системы 7
+        :return:
+        """
         s = 0
         for i in range(self.N):
             for j in range(4):
