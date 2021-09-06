@@ -1,8 +1,12 @@
 import sys
+import threading
+import time
 
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QComboBox, QTextEdit
 from PyQt5.QtWidgets import QDoubleSpinBox
+
+from gas import Gas
 
 
 class App(QMainWindow):
@@ -11,6 +15,7 @@ class App(QMainWindow):
     def __init__(self):
         super().__init__()
         self.title = 'MethanNumber Calc v0.1.1'
+        self.gas = None
         # Labels for lineEdits
         self.btnCalc = QPushButton('Calculate', self)
         self.c1_t = QLabel('C1:', self)
@@ -31,56 +36,67 @@ class App(QMainWindow):
         self.c1.setRange(0, 100)
         self.c1.setValue(0)
         self.c1.setSingleStep(0.1)
+        self.c1.setDecimals(4)
 
         self.c2 = QDoubleSpinBox(self)
         self.c2.setRange(0, 100)
         self.c2.setValue(0)
         self.c2.setSingleStep(0.1)
+        self.c2.setDecimals(4)
 
         self.c3 = QDoubleSpinBox(self)
         self.c3.setRange(0, 100)
         self.c3.setValue(0)
         self.c3.setSingleStep(0.1)
+        self.c3.setDecimals(4)
 
         self.ic4 = QDoubleSpinBox(self)
         self.ic4.setRange(0, 100)
         self.ic4.setValue(0)
         self.ic4.setSingleStep(0.1)
+        self.ic4.setDecimals(4)
 
         self.nc4 = QDoubleSpinBox(self)
         self.nc4.setRange(0, 100)
         self.nc4.setValue(0)
         self.nc4.setSingleStep(0.1)
+        self.nc4.setDecimals(4)
 
         self.neo_c5 = QDoubleSpinBox(self)
         self.neo_c5.setRange(0, 100)
         self.neo_c5.setValue(0)
         self.neo_c5.setSingleStep(0.1)
+        self.neo_c5.setDecimals(4)
 
         self.ic5 = QDoubleSpinBox(self)
         self.ic5.setRange(0, 100)
         self.ic5.setValue(0)
         self.ic5.setSingleStep(0.1)
+        self.ic5.setDecimals(4)
 
         self.nc5 = QDoubleSpinBox(self)
         self.nc5.setRange(0, 100)
         self.nc5.setValue(0)
         self.nc5.setSingleStep(0.1)
+        self.nc5.setDecimals(4)
 
         self.c6 = QDoubleSpinBox(self)
         self.c6.setRange(0, 100)
         self.c6.setValue(0)
         self.c6.setSingleStep(0.1)
+        self.c6.setDecimals(4)
 
         self.co2 = QDoubleSpinBox(self)
         self.co2.setRange(0, 100)
         self.co2.setValue(0)
         self.co2.setSingleStep(0.1)
+        self.co2.setDecimals(4)
 
         self.n2 = QDoubleSpinBox(self)
         self.n2.setRange(0, 100)
         self.n2.setValue(0)
         self.n2.setSingleStep(0.1)
+        self.n2.setDecimals(4)
 
         self.n = QComboBox(self)
         self.n.addItems(['3 mixes', '4 mixes'])
@@ -89,7 +105,37 @@ class App(QMainWindow):
         self.mn = QLabel("---", self)
         self.info = QTextEdit(self)
 
+        self.btnCalc.clicked.connect(self.start_calculation)
         self.initUI()
+
+    def start_calculation(self):
+        now = time.time()
+        self.mn.setText("Please, wait")
+        try:
+            self.g = Gas(float(self.c1.value()),
+                         float(self.c2.value()),
+                         float(self.c3.value()),
+                         float(self.ic4.value()),
+                         float(self.nc4.value()),
+                         float(self.neo_c5.value()),
+                         float(self.ic5.value()),
+                         float(self.nc5.value()),
+                         float(self.c6.value()),
+                         float(self.co2.value()),
+                         float(self.n2.value()),
+                         int(self.n.currentText().split(sep=' ')[0]))
+            job_thread = threading.Thread(target=self.process_MN)
+            job_thread.start()
+        except ZeroDivisionError:
+            self.info.setPlainText("Check your input values!")
+            self.mn.setText("ERROR")
+        # with open("out.txt", "w") as output:
+        #     output.write(str(g))
+
+    def process_MN(self):
+        self.g.calc_MN()
+        self.mn.setText(str(round(self.g.MN, 4)))
+        self.info.setPlainText(str(self.g))
 
     def initUI(self):
         self.setWindowTitle(self.title)
