@@ -126,6 +126,7 @@ class App(QMainWindow):
                          int(self.n.currentText().split(sep=' ')[0]))
             job_thread = threading.Thread(target=self.process_MN)
             job_thread.start()
+            self.info.setPlainText(self.g.construct_docstr())
         except ZeroDivisionError:
             self.info.setPlainText("Check your input values!")
             self.mn.setText("ERROR")
@@ -135,7 +136,6 @@ class App(QMainWindow):
     def process_MN(self):
         self.g.calc_MN()
         self.mn.setText(str(round(self.g.MN, 4)))
-        self.info.setPlainText(str(self.g))
 
     def initUI(self):
         self.setWindowTitle(self.title)

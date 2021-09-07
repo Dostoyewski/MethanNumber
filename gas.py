@@ -277,6 +277,12 @@ class Gas(object):
         for mix in self.mixes:
             mix.get_MN()
 
+    def construct_docstr(self):
+        s = ""
+        for mix in self.mixes:
+            s += mix.name + ": w = " + str(mix.w) + "\n"
+        return s
+
     def __str__(self):
         s = ""
         for component in self.components:
