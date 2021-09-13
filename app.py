@@ -3,7 +3,7 @@ import threading
 import time
 
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QComboBox, QTextEdit
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QComboBox, QTextEdit, QLineEdit
 from PyQt5.QtWidgets import QDoubleSpinBox
 
 from gas import Gas
@@ -18,6 +18,8 @@ class App(QMainWindow):
         self.gas = None
         # Labels for lineEdits
         self.btnCalc = QPushButton('Calculate', self)
+        self.btnStop = QPushButton('Stop', self)
+
         self.c1_t = QLabel('C1:', self)
         self.c2_t = QLabel('C2:', self)
         self.c3_t = QLabel('C3:', self)
@@ -102,10 +104,12 @@ class App(QMainWindow):
         self.n.addItems(['3 mixes', '4 mixes'])
 
         self.mn_t = QLabel("MN:", self)
-        self.mn = QLabel("---", self)
+        self.mn = QLineEdit("---", self)
         self.info = QTextEdit(self)
 
         self.btnCalc.clicked.connect(self.start_calculation)
+        self.btnStop.clicked.connect(self.stop_calculation)
+
         self.initUI()
 
     def start_calculation(self):
@@ -135,7 +139,17 @@ class App(QMainWindow):
 
     def process_MN(self):
         self.g.calc_MN()
-        self.mn.setText(str(round(self.g.MN, 4)))
+        if self.g.run_calculation:
+            self.mn.setText(str(round(self.g.MN, 4)))
+
+    def stop_calculation(self):
+        try:
+            self.g.run_calculation = False
+            self.info.setPlainText("Calculation stopped")
+            self.mn.setText("Interrupted")
+        except AttributeError:
+            self.info.setPlainText("Please, enter your gas components first")
+            self.mn.setText("ERROR")
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -180,8 +194,12 @@ class App(QMainWindow):
         self.btnCalc.resize(100, 35)
         self.btnCalc.move(400, 310)
 
+        self.btnStop.resize(100, 35)
+        self.btnStop.move(250, 310)
+
         self.mn_t.move(10, 310)
         self.mn.move(100, 310)
+        self.mn.setReadOnly(True)
 
         self.info.resize(490, 90)
         self.info.move(10, 370)

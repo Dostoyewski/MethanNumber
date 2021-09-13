@@ -274,6 +274,7 @@ class Gas(object):
         self.set_init_values()
         self.p_grad = None
         self.p_vect = None
+        self.run_calculation = True
         for mix in self.mixes:
             mix.get_MN()
 
@@ -381,8 +382,8 @@ class Gas(object):
         return np.add(grad, np.multiply(beta, self.p_vect))
 
     def calc_MN(self):
-        MN_N = self.f_mix()
-        while MN_N >= self.f_mix():
+        MN_N = self.f_mix() + 1
+        while abs(MN_N - self.f_mix()) > 1e-4 and self.run_calculation:
             MN_N = self.f_mix()
             coef = 0.00005
             if MN_N < 0.5:
@@ -416,7 +417,6 @@ class Gas(object):
             self.p_vect = grad
             self.p_grad = self.get_grad_3()
 
-            # s_e = self.sec_eq()
         for mix in self.mixes:
             self.MN += mix.weight * mix.MN
 
