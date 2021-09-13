@@ -14,7 +14,7 @@ class App(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.title = 'MethanNumber Calc v0.1.1'
+        self.title = 'MethanNumber Calc v0.2.1'
         self.gas = None
         # Labels for lineEdits
         self.btnCalc = QPushButton('Calculate', self)
