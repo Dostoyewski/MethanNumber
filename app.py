@@ -203,7 +203,8 @@ class App(QMainWindow):
 
         self.info.resize(490, 90)
         self.info.move(10, 370)
-        self.info.setPlainText("---")
+        self.info.setPlainText(
+            "Введите молярные доли исходной многокомпонентной смеси и укажите количество упрощенных смесей.")
         self.info.setReadOnly(True)
         self.show()
 
