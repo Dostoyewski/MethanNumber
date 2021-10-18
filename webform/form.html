@@ -5,7 +5,6 @@
     <meta charset="utf-8">
 </head>
 <body>
-
 <script>
     function getCookie(name) {
         let cookieValue = null;
@@ -53,14 +52,27 @@
 <script>
     $("#my-form").submit(function (e) {
         e.preventDefault();
-        fetch("http://127.0.0.1:8000/test/", {
+        const payload = $("#my-form").serializeArray();
+        var obj = {};
+        for (var i = 0; i < payload.length; ++i) {
+            var element = payload[i];
+            var name = element.name;
+            var value = element.value;
+
+            if (name) {
+                obj[name] = value;
+            }
+        }
+        fetch("http://127.0.0.1:8000/api/v1/calc/", {
             method: "POST",
             credentials: "same-origin",
             headers: {
                 "X-Requested-With": "XMLHttpRequest",
                 "X-CSRFToken": getCookie("csrftoken"),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({payload: "data to send"})
+            body: JSON.stringify(obj)
         })
             .then(response => response.json())
             .then(data => {
