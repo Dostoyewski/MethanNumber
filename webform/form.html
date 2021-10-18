@@ -36,11 +36,12 @@
     (function ($) {
         function processForm(e) {
             $.ajax({
-                url: 'users.php',
-                dataType: 'text',
+                url: 'http://127.0.0.1:5000/',
+                dataType: 'json',
                 type: 'post',
-                contentType: 'application/x-www-form-urlencoded',
+                contentType: 'application/json',
                 data: $(this).serialize(),
+                crossDomain: true,
                 success: function (data, textStatus, jQxhr) {
                     $('#response pre').html(data);
                 },
@@ -54,6 +55,22 @@
 
         $('#my-form').submit(processForm);
     })(jQuery);
+</script>
+<script>
+    var http = new XMLHttpRequest();
+    var url = '127.0.0.1:5000/';
+    var params = 'orem=ipsum&name=binny';
+    http.open('POST', url, true);
+
+    //Send the proper header information along with the request
+    http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+    http.onreadystatechange = function () {//Call a function when the state changes.
+        if (http.readyState == 4 && http.status == 200) {
+            alert(http.responseText);
+        }
+    }
+    http.send(params);
 </script>
 </body>
 </html>
