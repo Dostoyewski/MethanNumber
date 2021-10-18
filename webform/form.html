@@ -55,6 +55,7 @@
     <button type="submit">Submit</button>
 </form>
 <div id="container"></div>
+<div id="mix-container"></div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script>
     $("#my-form").submit(function (e) {
@@ -86,6 +87,8 @@
                 var container = document.getElementById('container');
                 var my_html = '<b>MN:</b> ' + data['MN'].toString();
                 container.innerHTML = my_html;
+                container = document.getElementById('mix-container');
+                container.innerText = data['mix'];
             });
     })
 </script>

@@ -23,4 +23,5 @@ def calc(request):
             int(request.data['Nm'].split(sep="N")[1]))
     g.calc_MN()
     print(request.data)
-    return Response({"MN": g.MN})
+    return Response({"MN": g.MN,
+                     "mix": g.construct_docstr()})
