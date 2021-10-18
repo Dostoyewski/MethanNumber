@@ -6,6 +6,24 @@
 </head>
 <body>
 
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
 <div id="response">
     <pre></pre>
 </div>
@@ -30,31 +48,27 @@
 
     <button type="submit">Submit</button>
 </form>
-
+<div id="container"></div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script>
-    (function ($) {
-        function processForm(e) {
-            $.ajax({
-                url: 'http://127.0.0.1:5000/',
-                dataType: 'json',
-                type: 'post',
-                contentType: 'application/json',
-                data: $(this).serialize(),
-                crossDomain: true,
-                success: function (data, textStatus, jQxhr) {
-                    $('#response pre').html(data);
-                },
-                error: function (jqXhr, textStatus, errorThrown) {
-                    console.log(errorThrown);
-                }
+    $("#my-form").submit(function (e) {
+        e.preventDefault();
+        fetch("http://127.0.0.1:8000/test/", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify({payload: "data to send"})
+        })
+            .then(response => response.json())
+            .then(data => {
+                var container = document.getElementById('container');
+                var my_html = '<b>MN:</b> ' + data['MN'].toString();
+                container.innerHTML = my_html;
             });
-
-            e.preventDefault();
-        }
-
-        $('#my-form').submit(processForm);
-    })(jQuery);
+    })
 </script>
 </body>
 </html>
