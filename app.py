@@ -14,11 +14,11 @@ class App(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.title = 'MethanNumber Calc v0.2.1'
+        self.title = 'MethanNumber Calc v0.1.2'
         self.gas = None
         # Labels for lineEdits
-        self.btnCalc = QPushButton('Calculate', self)
-        self.btnStop = QPushButton('Stop', self)
+        self.btnCalc = QPushButton('Вычислить', self)
+        self.btnStop = QPushButton('Стоп', self)
 
         self.c1_t = QLabel('C1:', self)
         self.c2_t = QLabel('C2:', self)
@@ -101,7 +101,7 @@ class App(QMainWindow):
         self.n2.setDecimals(4)
 
         self.n = QComboBox(self)
-        self.n.addItems(['3 mixes', '4 mixes'])
+        self.n.addItems(['3 смеси', '4 смеси'])
 
         self.mn_t = QLabel("MN:", self)
         self.mn = QLineEdit("---", self)
@@ -114,7 +114,7 @@ class App(QMainWindow):
 
     def start_calculation(self):
         now = time.time()
-        self.mn.setText("Please, wait")
+        self.mn.setText("В процессе")
         try:
             self.g = Gas(float(self.c1.value()),
                          float(self.c2.value()),
@@ -132,8 +132,8 @@ class App(QMainWindow):
             job_thread.start()
             self.info.setPlainText(self.g.construct_docstr())
         except ZeroDivisionError:
-            self.info.setPlainText("Check your input values!")
-            self.mn.setText("ERROR")
+            self.info.setPlainText("Проверьте входные данные!")
+            self.mn.setText("Ошибка!")
         # with open("out.txt", "w") as output:
         #     output.write(str(g))
 
@@ -145,11 +145,11 @@ class App(QMainWindow):
     def stop_calculation(self):
         try:
             self.g.run_calculation = False
-            self.info.setPlainText("Calculation stopped")
-            self.mn.setText("Interrupted")
+            self.info.setPlainText("Вычисления остановлены!")
+            self.mn.setText("Остановлено")
         except AttributeError:
-            self.info.setPlainText("Please, enter your gas components first")
-            self.mn.setText("ERROR")
+            self.info.setPlainText("Пожалуйста, укажите газовый состав")
+            self.mn.setText("Ошибка!")
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -203,7 +203,8 @@ class App(QMainWindow):
 
         self.info.resize(490, 90)
         self.info.move(10, 370)
-        self.info.setPlainText("Nothing to show")
+        self.info.setPlainText(
+            "Введите молярные доли исходной многокомпонентной смеси и укажите количество упрощенных смесей.")
         self.info.setReadOnly(True)
         self.show()
 
