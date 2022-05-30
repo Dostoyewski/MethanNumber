@@ -3,10 +3,32 @@ import threading
 import time
 
 from PyQt5 import QtCore
+from PyQt5.QtCore import pyqtSlot, QObject, pyqtSignal, QThread
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QComboBox, QTextEdit, QLineEdit
-from PyQt5.QtWidgets import QDoubleSpinBox
+from PyQt5.QtWidgets import QDoubleSpinBox, QMessageBox
 
 from gas import Gas
+
+PREDEFINED_KEY = "de415a3ac06326c78d843cc3856f95"
+
+
+class verifyClass(QObject):
+    sig = pyqtSignal(int)
+
+    def __init__(self):
+        super().__init__()
+
+    @pyqtSlot()
+    def verify_func(self):
+        try:
+            with open('./license.lic') as f:
+                key = f.readline()
+            if key == PREDEFINED_KEY:
+                self.sig.emit(1)
+            else:
+                self.sig.emit(0)
+        except FileNotFoundError:
+            self.sig.emit(0)
 
 
 class App(QMainWindow):
@@ -151,7 +173,26 @@ class App(QMainWindow):
             self.info.setPlainText("Пожалуйста, укажите газовый состав")
             self.mn.setText("Ошибка!")
 
+    def verify_func(self, i):
+        if i == 1:
+            pass
+        else:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Критическая ошибка!")
+            msg.setInformativeText('Отсутствует лицензия. Обратитесь к поставщику программного продукта.')
+            msg.setWindowTitle("Отсутствует лицензия")
+            msg.exec_()
+            self.close()
+
     def initUI(self):
+        verifyInstance = verifyClass()
+        verifyInstance.sig.connect(self.verify_func)
+        thread = QThread()
+        self._v_thread = (thread, verifyInstance)
+        verifyInstance.moveToThread(thread)
+        thread.started.connect(verifyInstance.verify_func)
+        thread.start()
         self.setWindowTitle(self.title)
         self.setFixedSize(520, 480)
 
